@@ -1,0 +1,50 @@
+included:
+  - Sources
+
+excluded:
+  - .build
+  - build
+  - TimeMeUp.app
+
+disabled_rules:
+  - trailing_whitespace  # SwiftFormat handles this
+  - vertical_whitespace  # SwiftFormat handles this
+
+# Basic opt-in rules
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - closure_spacing
+  - redundant_nil_coalescing
+
+line_length:
+  warning: 120
+  error: 150
+
+function_body_length:
+  warning: 60
+  error: 100
+
+type_body_length:
+  warning: 300
+  error: 400
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+# Naming conventions
+type_name:
+  min_length: 3
+  max_length: 40
+
+identifier_name:
+  min_length: 2
+  max_length: 40
+  excluded:
+    - id
+    - x
+    - y
+    - h  # Allow single letter for hours
+    - m  # Allow single letter for minutes
+    - s  # Allow single letter for seconds

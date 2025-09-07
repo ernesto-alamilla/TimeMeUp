@@ -1,0 +1,38 @@
+# SwiftFormat Configuration for TimeMeUp
+# This ensures consistent formatting across all contributors
+
+# Indentation
+--indent 4
+--tabwidth 4
+--smarttabs enabled
+
+# Line breaks and wrapping
+--linebreaks lf
+--maxwidth 120
+--wraparguments before-first
+--wrapcollections before-first
+--wrapparameters before-first
+--wrapconditions before-first
+
+# Spacing and alignment
+--trimwhitespace always
+--insertlines enabled
+--removelines enabled
+--elseposition same-line
+--guardelse same-line
+
+# Import organization
+--importgrouping testable-bottom
+
+# SwiftUI specific
+--swiftversion 5.9
+
+# Rules to enable
+--enable isEmpty
+--enable redundantSelf
+--enable sortImports
+--enable unusedArguments
+--enable wrapMultilineStatementBraces
+
+# Rules to disable (if any become problematic)
+--disable redundantReturn

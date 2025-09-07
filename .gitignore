@@ -1,0 +1,48 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Generated app bundle
+TimeMeUp.app/
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# VS Code (optional - only if you don't want to share VS Code settings)
+# .vscode/
+
+# Build artifacts and temporary files
+*.tmp
+*.temp
+*.log

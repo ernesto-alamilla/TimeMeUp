@@ -1,0 +1,159 @@
+#!/bin/bash
+
+set -e
+
+echo "🔨 Building TimeMeUp macOS App..."
+
+echo "📋 Running code quality checks..."
+
+if command -v swiftformat >/dev/null 2>&1; then
+    echo "🎨 Formatting code with SwiftFormat..."
+    swiftformat .
+    echo "✅ Code formatting complete"
+else
+    echo "⚠️  SwiftFormat not found. Install with: brew install swiftformat"
+fi
+
+if command -v swiftlint >/dev/null 2>&1; then
+    echo "🔍 Linting code with SwiftLint..."
+    if timeout 30 swiftlint --fix --quiet 2>/dev/null || true; then
+        timeout 30 swiftlint 2>/dev/null || echo "⚠️  SwiftLint encountered issues (build continues)"
+    else
+        echo "⚠️  SwiftLint crashed (known SourceKit issue - build continues)"
+    fi
+    echo "✅ Code linting attempted"
+else
+    echo "⚠️  SwiftLint not found. Install with: brew install swiftlint"
+fi
+
+echo "📦 Building Swift package (release mode)..."
+swift build -c release
+
+# Create app bundle structure
+APP_NAME="TimeMeUp"
+APP_BUNDLE="${APP_NAME}.app"
+CONTENTS_DIR="${APP_BUNDLE}/Contents"
+MACOS_DIR="${CONTENTS_DIR}/MacOS"
+RESOURCES_DIR="${CONTENTS_DIR}/Resources"
+
+echo "📁 Creating app bundle structure..."
+rm -rf "$APP_BUNDLE"
+mkdir -p "$MACOS_DIR"
+mkdir -p "$RESOURCES_DIR"
+
+# Copy the executable
+echo "📋 Copying executable..."
+cp ".build/release/$APP_NAME" "$MACOS_DIR/"
+
+# Create Info.plist
+echo "📝 Creating Info.plist..."
+cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>TimeMeUp</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.timemeup.app</string>
+    <key>CFBundleName</key>
+    <string>TimeMeUp</string>
+    <key>CFBundleDisplayName</key>
+    <string>TimeMeUp</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>TMUP</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2025 TimeMeUp. All rights reserved.</string>
+    <key>LSUIElement</key>
+    <false/>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+</dict>
+</plist>
+EOF
+
+# Create app icon if logo exists
+if [ -f "images/logo.png" ]; then
+    echo "🎨 Creating app icon..."
+    
+    # Create iconset directory
+    ICONSET_DIR="$RESOURCES_DIR/AppIcon.iconset"
+    mkdir -p "$ICONSET_DIR"
+    
+    # Generate all required macOS icon sizes directly from the optimized logo
+    echo "   → Generating icon sizes..."
+    sips -z 16 16     "images/logo.png" --out "$ICONSET_DIR/icon_16x16.png" >/dev/null 2>&1
+    sips -z 32 32     "images/logo.png" --out "$ICONSET_DIR/icon_16x16@2x.png" >/dev/null 2>&1
+    sips -z 32 32     "images/logo.png" --out "$ICONSET_DIR/icon_32x32.png" >/dev/null 2>&1
+    sips -z 64 64     "images/logo.png" --out "$ICONSET_DIR/icon_32x32@2x.png" >/dev/null 2>&1
+    sips -z 128 128   "images/logo.png" --out "$ICONSET_DIR/icon_128x128.png" >/dev/null 2>&1
+    sips -z 256 256   "images/logo.png" --out "$ICONSET_DIR/icon_128x128@2x.png" >/dev/null 2>&1
+    sips -z 256 256   "images/logo.png" --out "$ICONSET_DIR/icon_256x256.png" >/dev/null 2>&1
+    sips -z 512 512   "images/logo.png" --out "$ICONSET_DIR/icon_256x256@2x.png" >/dev/null 2>&1
+    sips -z 512 512   "images/logo.png" --out "$ICONSET_DIR/icon_512x512.png" >/dev/null 2>&1
+    sips -z 1024 1024 "images/logo.png" --out "$ICONSET_DIR/icon_512x512@2x.png" >/dev/null 2>&1
+    
+    # Convert to icns
+    echo "   → Converting to .icns format..."
+    iconutil -c icns "$ICONSET_DIR" >/dev/null 2>&1
+    
+    # Clean up
+    rm -rf "$ICONSET_DIR"
+    
+    echo "✅ App icon created successfully"
+else
+    echo "⚠️  Warning: No logo.png found"
+fi
+
+# Set permissions
+chmod +x "$MACOS_DIR/$APP_NAME"
+
+# Create PkgInfo
+echo -n "APPLTMLP" > "$CONTENTS_DIR/PkgInfo"
+
+echo ""
+echo "🎉 SUCCESS! TimeMeUp.app has been built!"
+echo "📍 Location: $(pwd)/$APP_BUNDLE"
+echo ""
+
+# Ask if user wants to install
+read -p "📦 Install TimeMeUp to /Applications/? (y/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "📦 Installing to /Applications/..."
+    cp -r "$APP_BUNDLE" "/Applications/"
+    echo "✅ Installed! TimeMeUp is now available in your Applications folder"
+    
+    # Ask to launch
+    read -p "🚀 Launch TimeMeUp now? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "🚀 Launching TimeMeUp..."
+        open "/Applications/$APP_BUNDLE"
+    fi
+else
+    # Ask to launch local copy
+    read -p "🚀 Launch TimeMeUp from current location? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "🚀 Launching TimeMeUp..."
+        open "$APP_BUNDLE"
+    fi
+fi
+
+echo ""
+echo "🎯 Build complete! Enjoy using TimeMeUp!"

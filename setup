@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# TimeMeUp Development Setup Script
+# Run this script to set up the development environment
+
+set -e
+
+echo "🚀 Setting up TimeMeUp development environment..."
+
+# Check if Homebrew is installed
+if ! command -v brew >/dev/null 2>&1; then
+    echo "❌ Homebrew is required but not installed."
+    echo "   Install from: https://brew.sh"
+    exit 1
+fi
+
+echo "✅ Homebrew found"
+
+# Install SwiftFormat
+if ! command -v swiftformat >/dev/null 2>&1; then
+    echo "📦 Installing SwiftFormat..."
+    brew install swiftformat
+    echo "✅ SwiftFormat installed"
+else
+    echo "✅ SwiftFormat already installed"
+fi
+
+# Install SwiftLint
+if ! command -v swiftlint >/dev/null 2>&1; then
+    echo "📦 Installing SwiftLint..."
+    brew install swiftlint
+    echo "✅ SwiftLint installed"
+else
+    echo "✅ SwiftLint already installed"
+fi
+
+# Check Swift version
+echo "🔍 Checking Swift version..."
+swift --version
+
+# Verify tools work
+echo "🧪 Testing tools..."
+swiftformat --version
+swiftlint version
+
+echo ""
+echo "🎉 Development environment setup complete!"
+echo ""
+echo "📝 Available commands:"
+echo "   ./setup     - Run this setup script"
+echo "   ./build     - Build app with code quality checks"
+echo "   swift run   - Quick development build"
+echo ""
+echo "🔧 Code quality tools:"
+echo "   swiftformat .      - Format all Swift files"
+echo "   swiftlint          - Check code quality"
+echo "   swiftlint --fix    - Auto-fix issues"
+echo ""
+echo "📋 Configuration files:"
+echo "   .swiftformat       - Formatting rules"
+echo "   .swiftlint.yml     - Linting rules"
+echo ""
